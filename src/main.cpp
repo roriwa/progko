@@ -23,16 +23,16 @@ int main(const int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    const cv::Mat gray_image = convert_to_grayscale(raw_image);
+    const cv::Mat output_image = convert_to_hsv(raw_image);
 
-    const std::string hsv_output_file = add_filename_suffix(input_file, "-hsv");
-    const bool hsv_success = cv::imwrite(hsv_output_file, gray_image);
+    const std::string hsv_output_file = add_filename_suffix(input_file, "-out");
+    const bool hsv_success = cv::imwrite(hsv_output_file, output_image);
     if (!hsv_success) {
         std::cout << "Failed to save output image" << std::endl;
         return EXIT_FAILURE;
     }
 
-    cv::imshow("Displayed Image", gray_image);
+    cv::imshow("Displayed Image", output_image);
     cv::waitKey(0);
     cv::destroyAllWindows();
 
