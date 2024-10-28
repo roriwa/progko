@@ -10,4 +10,6 @@ cv::Mat convert_to_grayscale(cv::Mat input);
 
 cv::Mat convert_to_hsv(cv::Mat input);
 
+cv::Mat convert_to_emboss(cv::Mat input);
+
 #endif //CORE_H

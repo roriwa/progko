@@ -15,3 +15,7 @@ std::string add_filename_suffix(const std::string& path, const std::string& suff
     if (n == std::string::npos) return path + suffix;
     return path.substr(0, n) + suffix + path.substr(n);
 }
+
+int max_ignore_sign(const int a, const int b) {
+    return (std::abs(a) > std::abs(b)) ? std::abs(a) : std::abs(b);
+}

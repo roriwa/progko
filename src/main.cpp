@@ -23,7 +23,7 @@ int main(const int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    const cv::Mat output_image = convert_to_hsv(raw_image);
+    const cv::Mat output_image = convert_to_emboss(raw_image);
 
     const std::string hsv_output_file = add_filename_suffix(input_file, "-out");
     const bool hsv_success = cv::imwrite(hsv_output_file, output_image);
