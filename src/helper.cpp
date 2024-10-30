@@ -19,3 +19,12 @@ std::string add_filename_suffix(const std::string& path, const std::string& suff
 int max_ignore_sign(const int a, const int b) {
     return (std::abs(a) > std::abs(b)) ? std::abs(a) : std::abs(b);
 }
+
+
+std::string str_join(const std::vector<std::string>& strings, const std::string& delimiter) {
+    if (strings.empty()) return "";
+    std::string r = strings[0];
+    for (int i = 1; i < strings.size(); i++)
+        r += delimiter + strings[i];
+    return r;
+}
