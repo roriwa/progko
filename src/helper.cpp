@@ -17,7 +17,9 @@ std::string add_filename_suffix(const std::string& path, const std::string& suff
 }
 
 int max_ignore_sign(const int a, const int b) {
-    return (std::abs(a) > std::abs(b)) ? std::abs(a) : std::abs(b);
+    const int absA = std::abs(a);
+    const int absB = std::abs(b);
+    return (absA > absB) ? absA : absB;
 }
 
 
