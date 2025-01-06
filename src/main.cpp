@@ -59,11 +59,5 @@ int main(const int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    // display resulting image
-    // todo: remove?
-    cv::imshow("Displayed Image", output_image);
-    cv::waitKey(0);
-    cv::destroyAllWindows();
-
     return EXIT_SUCCESS;
 }

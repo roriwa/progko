@@ -1,5 +1,5 @@
 //
-// Created by playerg9 on 27.10.24.
+// Created by roriwa on 27.10.24.
 //
 
 #include "core.h"
