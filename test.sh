@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+shopt -s nullglob
 
 THIS="$(realpath "$(dirname "${BASH_SOURCES[0]}")")"
 BUILD="$THIS/build"

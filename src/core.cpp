@@ -57,9 +57,9 @@ cv::Mat convert_to_hsv(cv::Mat input) {
                 hue = static_cast<int>(60 * ((red - green) / diff) + 240) % 180;
             }
             // calculate saturation
-            const int saturation = (cmax == 0.0f) ? 0 : static_cast<int>(diff / cmax) * 255;
+            const int saturation = (cmax == 0.0) ? 0 : static_cast<int>((diff / cmax) * 255.0f);
             // calculate value
-            const int value = static_cast<int>(cmax * 100);
+            const int value = static_cast<int>(cmax * 100.0f);
             // save in the output matrix
             output.at<cv::Vec3b>(i, j) = cv::Vec3b(hue, saturation, value);
         }
