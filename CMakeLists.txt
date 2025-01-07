@@ -19,8 +19,12 @@ add_executable(progko
         src/main.cpp
         src/helper.cpp
         src/helper.h
-        src/core.cpp
-        src/core.h)
+        src/core_plain.cpp
+        src/core_plain.h
+        src/core_omp.cpp
+        src/core_omp.h
+        src/core_mpi.cpp
+        src/core_mpi.h)
 
 # Link libraries
 target_link_libraries(progko

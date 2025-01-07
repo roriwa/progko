@@ -1,18 +1,24 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <mpi.h>
-#include <omp.h>
 #include "helper.h"
-#include "core.h"
+#include "core_plain.h"
+#include "core_omp.h"
+#include "core_mpi.h"
 
 /**
  * possible converter functions to use
  */
 std::map<std::string, cv::Mat(*)(cv::Mat)> converter_functions = {
-    {"hsv", &convert_to_hsv},
-    {"gray", &convert_to_grayscale},
-    {"grayscale", &convert_to_grayscale},
-    {"emboss", &convert_to_emboss},
+    {"plain-hsv", &core_plain::convert_to_hsv},
+    {"plain-grayscale", &core_plain::convert_to_grayscale},
+    {"plain-emboss", &core_plain::convert_to_emboss},
+    {"omp-hsv", &core_omp::convert_to_hsv},
+    {"omp-grayscale", &core_omp::convert_to_grayscale},
+    {"omp-emboss", &core_omp::convert_to_emboss},
+    {"mpi-hsv", &core_mpi::convert_to_hsv},
+    {"mpi-grayscale", &core_mpi::convert_to_grayscale},
+    {"mpi-emboss", &core_mpi::convert_to_emboss},
 };
 
 
@@ -48,8 +54,15 @@ int main(const int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    int rank, size, provided;
+    MPI_Init_thread(nullptr, nullptr, MPI_THREAD_FUNNELED, &provided);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
     // convert
     const cv::Mat output_image = converter(raw_image);
+
+    MPI_Finalize();
 
     // write input to output file
     const std::string output_file = add_filename_suffix(input_file, "-out");

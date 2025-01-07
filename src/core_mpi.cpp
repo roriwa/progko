@@ -1,11 +1,7 @@
-//
-// Created by roriwa on 27.10.24.
-//
-
-#include "core.h"
+#include "core_mpi.h"
 #include "helper.h"
 
-cv::Mat convert_to_grayscale(cv::Mat input) {
+cv::Mat core_mpi::convert_to_grayscale(cv::Mat input) {
     // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
     cv::Mat output(input.rows, input.cols , CV_8UC1);
 
@@ -28,7 +24,7 @@ cv::Mat convert_to_grayscale(cv::Mat input) {
     return output;
 }
 
-cv::Mat convert_to_hsv(cv::Mat input) {
+cv::Mat core_mpi::convert_to_hsv(cv::Mat input) {
     // create output matrix with same dimensions as input matrix. with three values for color (hue saturation value)
     cv::Mat output(input.rows, input.cols, CV_8UC3);
 
@@ -68,7 +64,7 @@ cv::Mat convert_to_hsv(cv::Mat input) {
     return output;
 }
 
-cv::Mat convert_to_emboss(cv::Mat input) {
+cv::Mat core_mpi::convert_to_emboss(cv::Mat input) {
     cv::Mat output(input.rows, input.cols , CV_8UC3);
 
     #pragma omp parallel for default(none) shared(input, output)
