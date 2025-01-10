@@ -1,22 +1,35 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <mpi.h>
-#include <omp.h>
 #include "helper.h"
-#include "core.h"
+#include "core_plain.h"
+#include "core_omp.h"
+#include "core_mpi.h"
 
 /**
  * possible converter functions to use
  */
-std::map<std::string, cv::Mat(*)(cv::Mat)> converter_functions = {
-    {"hsv", &convert_to_hsv},
-    {"gray", &convert_to_grayscale},
-    {"grayscale", &convert_to_grayscale},
-    {"emboss", &convert_to_emboss},
+std::map<std::string, cv::Mat(*)(const cv::Mat&)> converter_functions = {
+    {"plain-hsv", &core_plain::convert_to_hsv},
+    {"plain-grayscale", &core_plain::convert_to_grayscale},
+    {"plain-emboss", &core_plain::convert_to_emboss},
+    {"omp-hsv", &core_omp::convert_to_hsv},
+    {"omp-grayscale", &core_omp::convert_to_grayscale},
+    {"omp-emboss", &core_omp::convert_to_emboss},
+    {"mpi-hsv", &core_mpi::convert_to_hsv},
+    {"mpi-grayscale", &core_mpi::convert_to_grayscale},
+    {"mpi-emboss", &core_mpi::convert_to_emboss},
 };
 
 
 int main(const int argc, char** argv) {
+    // int rank, size, provided;
+    // MPI_Init_thread(nullptr, nullptr, MPI_THREAD_FUNNELED, &provided);
+    int rank, size;
+    MPI_Init(nullptr, nullptr);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
     // checks if the arguments are ok
     if (argc != 3) {
         const std::vector<std::string> supported_converters = extract_keys(converter_functions);
@@ -39,25 +52,39 @@ int main(const int argc, char** argv) {
         std::cout << "File '" << input_file << "' does not exist" << std::endl;
         return EXIT_FAILURE;
     }
-    std::cout << "File: '" << input_file << "'" << std::endl;
+    if (rank == 0)
+        std::cout << "File: '" << input_file << "'" << std::endl;
 
-    // read input image
-    const cv::Mat raw_image = imread(input_file, cv::IMREAD_COLOR);
-    if (raw_image.empty()) {
-        std::cout << "Failed to load input image" << std::endl;
-        return EXIT_FAILURE;
+    cv::Mat raw_image;
+
+    if (rank == 0) {
+        // read input image
+        raw_image = cv::imread(input_file, cv::IMREAD_COLOR);
+        if (raw_image.empty()) {
+            std::cout << "Failed to load input image" << std::endl;
+            return EXIT_FAILURE;
+        }
     }
 
     // convert
     const cv::Mat output_image = converter(raw_image);
 
-    // write input to output file
-    const std::string output_file = add_filename_suffix(input_file, "-out");
-    const bool hsv_success = cv::imwrite(output_file, output_image);
-    if (!hsv_success) {
-        std::cout << "Failed to save output image" << std::endl;
-        return EXIT_FAILURE;
+    if (rank == 0) {
+        // write input to output file
+        const std::string output_file = add_filename_suffix(input_file, "-out");
+        const bool hsv_success = cv::imwrite(output_file, output_image);
+        if (!hsv_success) {
+            std::cout << "Failed to save output image" << std::endl;
+            return EXIT_FAILURE;
+        }
     }
 
+    if (rank == 0 && std::getenv("NO_SHOW") == nullptr) {
+        cv::imshow(input_file, output_image);
+        cv::waitKey(0);
+        cv::destroyAllWindows();
+    }
+
+    MPI_Finalize();
     return EXIT_SUCCESS;
 }

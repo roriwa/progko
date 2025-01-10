@@ -1,15 +1,81 @@
-//
-// Created by roriwa on 27.10.24.
-//
-
-#include "core.h"
+#include <mpi.h>
+#include "core_mpi.h"
 #include "helper.h"
 
-cv::Mat convert_to_grayscale(cv::Mat input) {
-    // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
-    cv::Mat output(input.rows, input.cols , CV_8UC1);
 
-    #pragma omp parallel for default(none) shared(input, output)
+struct ImageProperties {
+    int cols;
+    int rows;
+    int srcRows;
+    int type;
+    int channels;
+};
+
+
+void distribute_image(const cv::Mat& srcImage, cv::Mat& partialImage, ImageProperties& props) {
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    int image_properties[5];
+
+    if (rank == 0) {
+        image_properties[0] = srcImage.cols;
+        image_properties[1] = srcImage.rows / size;
+        image_properties[2] = srcImage.rows;
+        image_properties[3] = srcImage.type();
+        image_properties[4] = srcImage.channels();
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    MPI_Bcast(image_properties, 5, MPI_INT, 0, MPI_COMM_WORLD);
+
+    props.cols = image_properties[0];
+    props.rows = image_properties[1];
+    props.srcRows = image_properties[2];
+    props.type = image_properties[3];
+    props.channels = image_properties[4];
+
+    partialImage = cv::Mat(props.rows, props.cols, props.type);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    const int send_size = props.rows * props.cols * props.channels;
+
+    MPI_Scatter(
+        srcImage.data, send_size, MPI_UNSIGNED_CHAR,
+        partialImage.data, send_size, MPI_UNSIGNED_CHAR,
+        0, MPI_COMM_WORLD
+    );
+}
+
+
+void gather_image(cv::Mat& output, const cv::Mat& partialImage, const ImageProperties& props) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    output = cv::Mat(props.srcRows, props.cols, partialImage.type());
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    const int send_size = partialImage.rows * partialImage.cols * partialImage.channels();
+
+    MPI_Gather(
+        partialImage.data, send_size, MPI_UNSIGNED_CHAR,
+        output.data, send_size, MPI_UNSIGNED_CHAR,
+        0, MPI_COMM_WORLD
+    );
+}
+
+
+cv::Mat core_mpi::convert_to_grayscale(const cv::Mat& srcImage) {
+    ImageProperties props{};
+    cv::Mat input;
+    distribute_image(srcImage, input, props);
+    // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
+    cv::Mat partialOutput(input.rows, input.cols, CV_8UC1);
+
     for (int i = 0; i < input.rows; i++) {
         for (int j = 0; j < input.cols; j++) {
             // get pixel colors
@@ -21,18 +87,22 @@ cv::Mat convert_to_grayscale(cv::Mat input) {
             // calculate gray-scale value
             const auto gray_value = static_cast<uchar>((0.21 * red) + (0.72 * green) + (0.07 * blue));
             // save in the output matrix
-            output.at<uchar>(i, j) = gray_value;
+            partialOutput.at<uchar>(i, j) = gray_value;
         }
     }
 
+    cv::Mat output;
+    gather_image(output, partialOutput, props);
     return output;
 }
 
-cv::Mat convert_to_hsv(cv::Mat input) {
+cv::Mat core_mpi::convert_to_hsv(const cv::Mat& srcImage) {
+    ImageProperties props{};
+    cv::Mat input;
+    distribute_image(srcImage, input, props);
     // create output matrix with same dimensions as input matrix. with three values for color (hue saturation value)
-    cv::Mat output(input.rows, input.cols, CV_8UC3);
+    cv::Mat partialOutput(input.rows, input.cols, CV_8UC3);
 
-    #pragma omp parallel for default(none) shared(input, output)
     for (int i = 0; i < input.rows; i++) {
         for (int j = 0; j < input.cols; j++) {
             // get pixel colors
@@ -57,21 +127,25 @@ cv::Mat convert_to_hsv(cv::Mat input) {
                 hue = static_cast<int>(60 * ((red - green) / diff) + 240) % 180;
             }
             // calculate saturation
-            const int saturation = (cmax == 0.0) ? 0 : static_cast<int>((diff / cmax) * 255.0f);
+            const int saturation = (cmax == 0.0f) ? 0 : static_cast<int>(diff / cmax) * 255;
             // calculate value
-            const int value = static_cast<int>(cmax * 100.0f);
+            const int value = static_cast<int>(cmax * 100);
             // save in the output matrix
-            output.at<cv::Vec3b>(i, j) = cv::Vec3b(hue, saturation, value);
+            partialOutput.at<cv::Vec3b>(i, j) = cv::Vec3b(hue, saturation, value);
         }
     }
 
+    cv::Mat output;
+    gather_image(output, partialOutput, props);
     return output;
 }
 
-cv::Mat convert_to_emboss(cv::Mat input) {
-    cv::Mat output(input.rows, input.cols , CV_8UC3);
+cv::Mat core_mpi::convert_to_emboss(const cv::Mat& srcImage) {
+    ImageProperties props{};
+    cv::Mat input;
+    distribute_image(srcImage, input, props);
+    cv::Mat partialOutput(input.rows, input.cols , CV_8UC3);
 
-    #pragma omp parallel for default(none) shared(input, output)
     for (int i = 1; i < input.rows; i++) {
         for (int j = 1; j < input.cols; j++) {
             // get pixel colors
@@ -96,9 +170,11 @@ cv::Mat convert_to_emboss(cv::Mat input) {
             // calculate the gray value based off some magic while capping it between 0-255
             const int gray = clamp(0, 128 + max, 255);
             // save in the output matrix
-            output.at<cv::Vec3b>(i, j) = cv::Vec3b(gray, gray, gray);
+            partialOutput.at<cv::Vec3b>(i, j) = cv::Vec3b(gray, gray, gray);
         }
     }
 
+    cv::Mat output;
+    gather_image(output, partialOutput, props);
     return output;
 }

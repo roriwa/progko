@@ -1,7 +1,3 @@
-//
-// Created by roriwa on 27.10.24.
-//
-
 #ifndef HELPER_H
 #define HELPER_H
 #include <string>
