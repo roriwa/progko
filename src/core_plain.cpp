@@ -1,7 +1,7 @@
 #include "core_plain.h"
 #include "helper.h"
 
-cv::Mat core_plain::convert_to_grayscale(cv::Mat input) {
+cv::Mat core_plain::convert_to_grayscale(const cv::Mat& input) {
     // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
     cv::Mat output(input.rows, input.cols , CV_8UC1);
 
@@ -23,7 +23,7 @@ cv::Mat core_plain::convert_to_grayscale(cv::Mat input) {
     return output;
 }
 
-cv::Mat core_plain::convert_to_hsv(cv::Mat input) {
+cv::Mat core_plain::convert_to_hsv(const cv::Mat& input) {
     // create output matrix with same dimensions as input matrix. with three values for color (hue saturation value)
     cv::Mat output(input.rows, input.cols, CV_8UC3);
 
@@ -62,7 +62,7 @@ cv::Mat core_plain::convert_to_hsv(cv::Mat input) {
     return output;
 }
 
-cv::Mat core_plain::convert_to_emboss(cv::Mat input) {
+cv::Mat core_plain::convert_to_emboss(const cv::Mat& input) {
     cv::Mat output(input.rows, input.cols , CV_8UC3);
 
     for (int i = 1; i < input.rows; i++) {
