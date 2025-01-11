@@ -23,9 +23,12 @@ std::string add_filename_suffix(const std::string& path, const std::string& suff
  * returns the larger number of a and b while ignoring the sign (1 == -1)
  * @param a first integer
  * @param b second integer
- * @return max(abs(a), abs(b))
+ * @return (abs(a) > abs(b)) ? a : b
  */
-int max_ignore_sign(int a, int b);
+template<typename T>
+inline const T& max_ignore_sign(const T& a, const T& b) {
+    return (std::abs(a) > std::abs(b)) ? a : b;
+}
 
 /**
  * clamp a value between a min and a max
@@ -34,7 +37,8 @@ int max_ignore_sign(int a, int b);
  * @param max output-value
  * @return value between min and max
  */
-inline int clamp(const int min, const int value, const int max) {
+template<typename T>
+inline const T& clamp(const T& min, const T& value, const T& max) {
     return value < min ? min : (value > max ? max : value);
 }
 
