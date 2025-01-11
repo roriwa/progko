@@ -69,17 +69,17 @@ void gather_image(cv::Mat& output, const cv::Mat& partialImage, const ImagePrope
 }
 
 
-cv::Mat core_mpi::convert_to_grayscale(const cv::Mat& srcImage) {
+cv::Mat core_mpi::convert_to_grayscale(const cv::Mat& input) {
     ImageProperties props{};
-    cv::Mat input;
-    distribute_image(srcImage, input, props);
+    cv::Mat partialInput;
+    distribute_image(input, partialInput, props);
     // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
-    cv::Mat partialOutput(input.rows, input.cols, CV_8UC1);
+    cv::Mat partialOutput(partialInput.rows, partialInput.cols, CV_8UC1);
 
-    for (int i = 0; i < input.rows; i++) {
-        for (int j = 0; j < input.cols; j++) {
+    for (int i = 0; i < partialInput.rows; i++) {
+        for (int j = 0; j < partialInput.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
-            const auto& pixel = input.at<cv::Vec3b>(i, j);
+            const auto& pixel = partialInput.at<cv::Vec3b>(i, j);
             // extract the pixels as uchar (unsigned 8-bit) types (0..255)
             const uchar  // note: opencv format is BGR
                 blue = pixel[0],
@@ -97,17 +97,17 @@ cv::Mat core_mpi::convert_to_grayscale(const cv::Mat& srcImage) {
     return output;
 }
 
-cv::Mat core_mpi::convert_to_hsv(const cv::Mat& srcImage) {
+cv::Mat core_mpi::convert_to_hsv(const cv::Mat& input) {
     ImageProperties props{};
-    cv::Mat input;
-    distribute_image(srcImage, input, props);
+    cv::Mat partialInput;
+    distribute_image(input, partialInput, props);
     // create output matrix with same dimensions as input matrix. with three values for color (hue saturation value)
-    cv::Mat partialOutput(input.rows, input.cols, CV_8UC3);
+    cv::Mat partialOutput(partialInput.rows, partialInput.cols, CV_8UC3);
 
-    for (int i = 0; i < input.rows; i++) {
-        for (int j = 0; j < input.cols; j++) {
+    for (int i = 0; i < partialInput.rows; i++) {
+        for (int j = 0; j < partialInput.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
-            const auto& pixel = input.at<cv::Vec3b>(i, j);
+            const auto& pixel = partialInput.at<cv::Vec3b>(i, j);
             // extract the pixels as uchar (unsigned 8-bit) types (0..255)
             const float  // note: opencv format is BGR
                 blue = static_cast<float>(pixel[0]) / 255.0f,
@@ -142,23 +142,23 @@ cv::Mat core_mpi::convert_to_hsv(const cv::Mat& srcImage) {
     return output;
 }
 
-cv::Mat core_mpi::convert_to_emboss(const cv::Mat& srcImage) {
+cv::Mat core_mpi::convert_to_emboss(const cv::Mat& input) {
     ImageProperties props{};
-    cv::Mat input;
-    distribute_image(srcImage, input, props);
-    cv::Mat partialOutput(input.rows, input.cols , CV_8UC3);
+    cv::Mat partialInput;
+    distribute_image(input, partialInput, props);
+    cv::Mat partialOutput(partialInput.rows, partialInput.cols , CV_8UC3);
 
-    for (int i = 1; i < input.rows; i++) {
-        for (int j = 1; j < input.cols; j++) {
+    for (int i = 1; i < partialInput.rows; i++) {
+        for (int j = 1; j < partialInput.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
-            const auto& pixel = input.at<cv::Vec3b>(i, j);
+            const auto& pixel = partialInput.at<cv::Vec3b>(i, j);
             // extract the pixels as uchar (unsigned 8-bit) types (0..255)
             const uchar  // note: opencv format is BGR
                 blue = pixel[0],
                 green = pixel[1],
                 red = pixel[2];
             // get pixel colors of the top-left neighbor
-            const auto& neighborPixel = input.at<cv::Vec3b>(i-1, j-1);
+            const auto& neighborPixel = partialInput.at<cv::Vec3b>(i-1, j-1);
             const uchar  // note: opencv format is BGR
                 tlBlue = neighborPixel[0],
                 tlGreen = neighborPixel[1],
