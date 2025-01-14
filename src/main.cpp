@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <mpi.h>
+#include <omp.h>
 #include "helper.h"
 #include "core_plain.h"
 #include "core_omp.h"
@@ -33,7 +34,7 @@ int main(const int argc, char** argv) {
     // checks if the arguments are ok
     if (argc != 3) {
         const std::vector<std::string> supported_converters = extract_keys(converter_functions);
-        std::cout << "Usage: " << argv[0] << " {" << str_join(supported_converters, ",") << "} <image>" << std::endl;
+        printf("Usage: %s {%s} <image>\n", argv[0], str_join(supported_converters, ",").c_str());
         return EXIT_FAILURE;
     }
 
@@ -41,7 +42,7 @@ int main(const int argc, char** argv) {
     const std::string converter_name = argv[1];
     const auto converterEntry = converter_functions.find(converter_name);
     if (converterEntry == converter_functions.end()) {
-        std::cout << "Unknown conversion function '" << converter_name << "'" << std::endl;
+        printf("Unknown conversion function '%s'\n", converter_name.c_str());
         return EXIT_FAILURE;
     }
     const auto converter = converterEntry->second;
@@ -49,11 +50,11 @@ int main(const int argc, char** argv) {
     // check if the input-file exists
     const std::string input_file = argv[2];
     if (!file_exists(input_file)) {
-        std::cout << "File '" << input_file << "' does not exist" << std::endl;
+        printf("File '%s' does not exist\n", input_file.c_str());
         return EXIT_FAILURE;
     }
     if (rank == 0)
-        std::cout << "File: '" << input_file << "'" << std::endl;
+        printf("File: '%s'\n", input_file.c_str());
 
     cv::Mat raw_image;
 
@@ -61,20 +62,25 @@ int main(const int argc, char** argv) {
         // read input image
         raw_image = cv::imread(input_file, cv::IMREAD_COLOR);
         if (raw_image.empty()) {
-            std::cout << "Failed to load input image" << std::endl;
+            printf("Failed to load input image\n");
             return EXIT_FAILURE;
         }
     }
 
     // convert
+    const double time_start = omp_get_wtime();
     const cv::Mat output_image = converter(raw_image);
+    const double time_end = omp_get_wtime();
+    const double time_taken = time_end - time_start;
+    if (rank == 0)
+        printf("Converter function took %f seconds\n", time_taken);
 
     if (rank == 0) {
         // write input to output file
         const std::string output_file = add_filename_suffix(input_file, "-out");
         const bool hsv_success = cv::imwrite(output_file, output_image);
         if (!hsv_success) {
-            std::cout << "Failed to save output image" << std::endl;
+            printf("Failed to save output image\n");
             return EXIT_FAILURE;
         }
     }
