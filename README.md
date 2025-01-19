@@ -15,18 +15,13 @@ sudo apt install build-essential cmake libopencv-dev libopenmpi-dev openmpi-bin 
 ```shell
 mkdir -p build && cd build
 cmake ..
-make
+make -j
 ```
 
 ## Running
 
 ```shell
 cd build
-./progko [...args]
-```
-
-## Performance Testing
-
-```shell
-bash test.sh
+./progko {omp-emboss,omp-grayscale,omp-hsv,plain-emboss,plain-grayscale,plain-hsv} <image>
+mpirun ./progko {mpi-emboss,mpi-grayscale,mpi-hsv,omp-mpi-emboss,omp-mpi-grayscale,omp-mpi-hsv} <image>
 ```
