@@ -7,6 +7,7 @@
 #include "core_omp.h"
 #include "core_mpi.h"
 #include "core_omp_mpi.h"
+#include "core_cv2.h"
 
 /**
  * possible converter functions to use
@@ -24,6 +25,9 @@ std::map<std::string, cv::Mat(*)(const cv::Mat&)> converter_functions = {
     {"omp-mpi-emboss", &core_omp_mpi::convert_to_emboss},
     {"omp-mpi-hsv", &core_omp_mpi::convert_to_hsv},
     {"omp-mpi-grayscale", &core_omp_mpi::convert_to_grayscale},
+    {"cv2-emboss", &core_cv2::convert_to_emboss},
+    {"cv2-hsv", &core_cv2::convert_to_hsv},
+    {"cv2-grayscale", &core_cv2::convert_to_grayscale},
 };
 
 
