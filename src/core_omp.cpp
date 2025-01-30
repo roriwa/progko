@@ -5,7 +5,7 @@ cv::Mat core_omp::convert_to_grayscale(const cv::Mat& input) {
     // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
     cv::Mat output(input.rows, input.cols , CV_8UC1);
 
-    #pragma omp parallel for default(none) shared(input, output)
+    #pragma omp parallel for collapse(2) default(none) shared(input, output)
     for (int i = 0; i < input.rows; i++) {
         for (int j = 0; j < input.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
@@ -29,7 +29,7 @@ cv::Mat core_omp::convert_to_hsv(const cv::Mat& input) {
     // create output matrix with same dimensions as input matrix. with three values for color (hue saturation value)
     cv::Mat output(input.rows, input.cols, CV_8UC3);
 
-    #pragma omp parallel for default(none) shared(input, output)
+    #pragma omp parallel for collapse(2) default(none) shared(input, output)
     for (int i = 0; i < input.rows; i++) {
         for (int j = 0; j < input.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
@@ -69,7 +69,7 @@ cv::Mat core_omp::convert_to_hsv(const cv::Mat& input) {
 cv::Mat core_omp::convert_to_emboss(const cv::Mat& input) {
     cv::Mat output(input.rows, input.cols , CV_8UC3);
 
-    #pragma omp parallel for default(none) shared(input, output)
+    #pragma omp parallel for collapse(2) default(none) shared(input, output)
     for (int i = 1; i < input.rows; i++) {
         for (int j = 1; j < input.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector

@@ -76,7 +76,7 @@ cv::Mat core_omp_mpi::convert_to_grayscale(const cv::Mat& input) {
     // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
     cv::Mat partialOutput(partialInput.rows, partialInput.cols, CV_8UC1);
 
-    #pragma omp parallel for default(none) shared(partialInput, partialOutput)
+    #pragma omp parallel for collapse(2) default(none) shared(partialInput, partialOutput)
     for (int i = 0; i < partialInput.rows; i++) {
         for (int j = 0; j < partialInput.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
@@ -105,7 +105,7 @@ cv::Mat core_omp_mpi::convert_to_hsv(const cv::Mat& input) {
     // create output matrix with same dimensions as input matrix. with three values for color (hue saturation value)
     cv::Mat partialOutput(partialInput.rows, partialInput.cols, CV_8UC3);
 
-    #pragma omp parallel for default(none) shared(partialInput, partialOutput)
+    #pragma omp parallel for collapse(2) default(none) shared(partialInput, partialOutput)
     for (int i = 0; i < partialInput.rows; i++) {
         for (int j = 0; j < partialInput.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
@@ -150,7 +150,7 @@ cv::Mat core_omp_mpi::convert_to_emboss(const cv::Mat& input) {
     omp_mpi_distribute_image(input, partialInput, props);
     cv::Mat partialOutput(partialInput.rows, partialInput.cols , CV_8UC3);
 
-    #pragma omp parallel for default(none) shared(partialInput, partialOutput)
+    #pragma omp parallel for collapse(2) default(none) shared(partialInput, partialOutput)
     for (int i = 1; i < partialInput.rows; i++) {
         for (int j = 1; j < partialInput.cols; j++) {
             // get pixel at [i, j] as a <B,G,R> vector
