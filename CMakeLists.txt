@@ -25,8 +25,8 @@ add_executable(progko
         src/core_omp.h
         src/core_mpi.cpp
         src/core_mpi.h
-        src/core_omp_mpi.cpp
-        src/core_omp_mpi.h
+        src/core_mpi_omp.cpp
+        src/core_mpi_omp.h
         src/core_cv2.h
         src/core_cv2.cpp)
 

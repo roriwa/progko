@@ -1,5 +1,5 @@
 #include <mpi.h>
-#include "core_omp_mpi.h"
+#include "core_mpi_omp.h"
 #include "helper.h"
 
 
@@ -12,7 +12,7 @@ struct ImageProperties {
 };
 
 
-void omp_mpi_distribute_image(const cv::Mat& srcImage, cv::Mat& partialImage, ImageProperties& props) {
+void mpi_omp_distribute_image(const cv::Mat& srcImage, cv::Mat& partialImage, ImageProperties& props) {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -51,7 +51,7 @@ void omp_mpi_distribute_image(const cv::Mat& srcImage, cv::Mat& partialImage, Im
 }
 
 
-void omp_mpi_gather_image(cv::Mat& output, const cv::Mat& partialImage, const ImageProperties& props) {
+void mpi_omp_gather_image(cv::Mat& output, const cv::Mat& partialImage, const ImageProperties& props) {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -69,10 +69,10 @@ void omp_mpi_gather_image(cv::Mat& output, const cv::Mat& partialImage, const Im
 }
 
 
-cv::Mat core_omp_mpi::convert_to_grayscale(const cv::Mat& input) {
+cv::Mat core_mpi_omp::convert_to_grayscale(const cv::Mat& input) {
     ImageProperties props{};
     cv::Mat partialInput;
-    omp_mpi_distribute_image(input, partialInput, props);
+    mpi_omp_distribute_image(input, partialInput, props);
     // create output matrix with same dimensions as input matrix but with only one value for color (gray-scale value)
     cv::Mat partialOutput(partialInput.rows, partialInput.cols, CV_8UC1);
 
@@ -94,14 +94,14 @@ cv::Mat core_omp_mpi::convert_to_grayscale(const cv::Mat& input) {
     }
 
     cv::Mat output;
-    omp_mpi_gather_image(output, partialOutput, props);
+    mpi_omp_gather_image(output, partialOutput, props);
     return output;
 }
 
-cv::Mat core_omp_mpi::convert_to_hsv(const cv::Mat& input) {
+cv::Mat core_mpi_omp::convert_to_hsv(const cv::Mat& input) {
     ImageProperties props{};
     cv::Mat partialInput;
-    omp_mpi_distribute_image(input, partialInput, props);
+    mpi_omp_distribute_image(input, partialInput, props);
     // create output matrix with same dimensions as input matrix. with three values for color (hue saturation value)
     cv::Mat partialOutput(partialInput.rows, partialInput.cols, CV_8UC3);
 
@@ -140,14 +140,14 @@ cv::Mat core_omp_mpi::convert_to_hsv(const cv::Mat& input) {
     }
 
     cv::Mat output;
-    omp_mpi_gather_image(output, partialOutput, props);
+    mpi_omp_gather_image(output, partialOutput, props);
     return output;
 }
 
-cv::Mat core_omp_mpi::convert_to_emboss(const cv::Mat& input) {
+cv::Mat core_mpi_omp::convert_to_emboss(const cv::Mat& input) {
     ImageProperties props{};
     cv::Mat partialInput;
-    omp_mpi_distribute_image(input, partialInput, props);
+    mpi_omp_distribute_image(input, partialInput, props);
     cv::Mat partialOutput(partialInput.rows, partialInput.cols , CV_8UC3);
 
     #pragma omp parallel for collapse(2) default(none) shared(partialInput, partialOutput)
@@ -181,6 +181,6 @@ cv::Mat core_omp_mpi::convert_to_emboss(const cv::Mat& input) {
     }
 
     cv::Mat output;
-    omp_mpi_gather_image(output, partialOutput, props);
+    mpi_omp_gather_image(output, partialOutput, props);
     return output;
 }
