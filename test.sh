@@ -26,8 +26,7 @@ cd "$TEST_IMAGES"
 
 for ALGO in "${ALGORITHMS[@]}"; do
   echo "Testing '$ALGO'"
-#  for IMGDIR in */; do
-  for IMGDIR in "dice/" "giant-images"; do
+  for IMGDIR in */; do
     echo "In Directory '$IMGDIR'"
     for img in "${IMGDIR%/}"/*-out*; do
       rm "$img"
@@ -55,6 +54,5 @@ for ALGO in "${ALGORITHMS[@]}"; do
     done
     echo "Writing CSV '$ALGO-${IMGDIR%/}.csv'"
     echo -n "$OUTPUT" > "$ALGO-${IMGDIR%/}.csv"
-#    exit 0
   done
 done
