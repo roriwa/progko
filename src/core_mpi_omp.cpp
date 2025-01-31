@@ -27,8 +27,6 @@ void mpi_omp_distribute_image(const cv::Mat& srcImage, cv::Mat& partialImage, Im
         image_properties[4] = srcImage.channels();
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
-
     MPI_Bcast(image_properties, 5, MPI_INT, 0, MPI_COMM_WORLD);
 
     props.cols = image_properties[0];
@@ -38,8 +36,6 @@ void mpi_omp_distribute_image(const cv::Mat& srcImage, cv::Mat& partialImage, Im
     props.channels = image_properties[4];
 
     partialImage = cv::Mat(props.rows, props.cols, props.type);
-
-    MPI_Barrier(MPI_COMM_WORLD);
 
     const int send_size = props.rows * props.cols * props.channels;
 
@@ -56,8 +52,6 @@ void mpi_omp_gather_image(cv::Mat& output, const cv::Mat& partialImage, const Im
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     output = cv::Mat(props.srcRows, props.cols, partialImage.type());
-
-    MPI_Barrier(MPI_COMM_WORLD);
 
     const int send_size = partialImage.rows * partialImage.cols * partialImage.channels();
 
